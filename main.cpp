@@ -28,22 +28,25 @@ union bytes_to_uint16 {
     uint16_t uint16;
 };
 
-void set_value(const uint16_t a, const uint16_t v) {
-    if (v > 32767) {
-        cout << "Invalid value!\n";
-    }
+void set_reg(const uint16_t a, const uint16_t v) {
     if (a <= 32767) {
-        memory[a] = v;
-        return;
+        program_state = error;
     } else if (a <= 32775) {
-        registers[(a-32768)] = v; // Register address 0..7
-        return;
+        registers[(a - 32768)] = v; // Register address 0..7
     } else {
         program_state = error;
     }
 }
 
-uint16_t read_value(const uint16_t value) {
+void set_mem(const uint16_t a, const uint16_t v) {
+    if (a <= 32767) {
+        memory[a] = v;
+    } else {
+        program_state = error;
+    }
+}
+
+uint16_t convert_value(const uint16_t value) {
     if (value <= 32767) {
         return value; // Literal
     } else if (value <= 32775) {
@@ -65,7 +68,6 @@ uint16_t mult(const uint16_t a, const uint16_t b) {
 void operate() {
     uint16_t a, b, c, v;
     size_t opsize = 0;
-    //cout << "mptr: " << memory_ptr << endl;
     flush(cout);
     switch (memory[memory_ptr]) {
         case 0: // halt;
@@ -76,17 +78,18 @@ void operate() {
             a = memory[memory_ptr+1];
             b = memory[memory_ptr+2];
             opsize = 3;
-            set_value(a, read_value(b));
+            set_reg(a, convert_value(b));
             break;
         case 2: // push a
             a = memory[memory_ptr+1];
             opsize = 2;
-            stack.push_back(read_value(a));
+            stack.push_back(convert_value(a));
             break;
         case 3: // pop a
             a = memory[memory_ptr+1];
             opsize = 2;
-            set_value(a, stack.back());
+            if (stack.size() == 0) program_state = error;
+            set_reg(a, stack.back());
             stack.pop_back();
             break;
         case 4: // eq a = (b == c)
@@ -94,27 +97,27 @@ void operate() {
             b = memory[memory_ptr+2];
             c = memory[memory_ptr+3];
             opsize = 4;
-            v = (uint16_t)(read_value(b)==read_value(c) ? 1 : 0);
-            set_value(a, v);
+            v = (uint16_t)(convert_value(b)== convert_value(c) ? 1 : 0);
+            set_reg(a, v);
             break;
         case 5: // gt a = (b > c)
             a = memory[memory_ptr+1];
             b = memory[memory_ptr+2];
             c = memory[memory_ptr+3];
             opsize = 4;
-            v = (uint16_t)(read_value(b)>read_value(c) ? 1 : 0);
-            set_value(a, v);
+            v = (uint16_t)(convert_value(b)> convert_value(c) ? 1 : 0);
+            set_reg(a, v);
             break;
         case 6: // jmp a
             a = memory[memory_ptr+1];
             opsize = 0;
-            memory_ptr = read_value(a);
+            memory_ptr = convert_value(a);
             break;
         case 7: // jt a b
             a = memory[memory_ptr+1];
             b = memory[memory_ptr+2];
-            if (read_value(a) != 0) {
-                memory_ptr = read_value(b);
+            if (convert_value(a) != 0) {
+                memory_ptr = convert_value(b);
                 opsize = 0; // Avoid incrementing after switch
             } else {
                 opsize = 3;
@@ -123,8 +126,8 @@ void operate() {
         case 8: // jf a b
             a = memory[memory_ptr+1];
             b = memory[memory_ptr+2];
-            if (read_value(a) == 0) {
-                memory_ptr = read_value(b);
+            if (convert_value(a) == 0) {
+                memory_ptr = convert_value(b);
                 opsize = 0; // Avoid incrementing after switch
             } else {
                 opsize = 3;
@@ -135,63 +138,64 @@ void operate() {
             b = memory[memory_ptr+2];
             c = memory[memory_ptr+3];
             opsize = 4;
-            set_value(a, add(read_value(b), read_value(c)));
+            set_reg(a, add(convert_value(b), convert_value(c)));
             break;
         case 10: // mult a b c
             a = memory[memory_ptr+1];
             b = memory[memory_ptr+2];
             c = memory[memory_ptr+3];
             opsize = 4;
-            set_value(a, mult(read_value(b), read_value(c)));
+            set_reg(a, mult(convert_value(b), convert_value(c)));
             break;
         case 11: // mod a b c
             a = memory[memory_ptr+1];
             b = memory[memory_ptr+2];
             c = memory[memory_ptr+3];
             opsize = 4;
-            set_value(a, read_value(b)%read_value(c));
+            set_reg(a, convert_value(b) % convert_value(c));
             break;
         case 12: // and a b c
             a = memory[memory_ptr+1];
             b = memory[memory_ptr+2];
             c = memory[memory_ptr+3];
             opsize = 4;
-            set_value(a, read_value(b)&read_value(c));
+            set_reg(a, convert_value(b) & convert_value(c));
             break;
         case 13: // or a b c
             a = memory[memory_ptr+1];
             b = memory[memory_ptr+2];
             c = memory[memory_ptr+3];
             opsize = 4;
-            set_value(a, read_value(b)|read_value(c));
+            set_reg(a, convert_value(b) | convert_value(c));
             break;
         case 14: // not a b
             a = memory[memory_ptr+1];
             b = memory[memory_ptr+2];
             opsize = 3;
-            v = (uint16_t)((~read_value(b)) & 0x7fff); // 15-bit bitwise inverse
-            set_value(a, v);
+            v = (uint16_t)((~convert_value(b)) & 0x7fff); // 15-bit bitwise inverse
+            set_reg(a, v);
             break;
-        case 15: // rmem a b
+        case 15: // rmem a b TESTED
             a = memory[memory_ptr+1];
             b = memory[memory_ptr+2];
             opsize = 3;
-            set_value(a, b);
+            set_reg(a, memory[convert_value(b)]);
             break;
         case 16: // wmem a b
             a = memory[memory_ptr+1];
             b = memory[memory_ptr+2];
             opsize = 3;
-            set_value(a, read_value(b));
+            set_mem(convert_value(a), convert_value(b));
             break;
-        case 17: // call a
+        case 17: // call a TESTED
             a = memory[memory_ptr+1];
             opsize = 0; // Avoid extra jump
             stack.push_back((uint16_t)(memory_ptr+2));
-            memory_ptr = read_value(a);
+            memory_ptr = convert_value(a);
             break;
         case 18: // ret
             opsize = 0; // Avoid extra jump
+            if (stack.size() == 0) program_state = error;
             v = stack.back();
             stack.pop_back();
             memory_ptr = v;
@@ -199,13 +203,14 @@ void operate() {
         case 19: // out a
             a = memory[memory_ptr+1];
             opsize = 2;
-            cout << (char)read_value(a);
+            cout << (char) convert_value(a);
+            flush(cout);
             break;
         case 20: // in a
             a = memory[memory_ptr+1];
             opsize = 2;
             v = (uint16_t)getchar();
-            set_value(a, v);
+            set_reg(a, v);
             break;
         case 21: // noop
             opsize = 1;
