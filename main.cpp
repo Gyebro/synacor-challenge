@@ -290,6 +290,35 @@ void add_input(string line) {
     }
 }
 
+const string coins[] = {"red", "corroded", "shiny", "concave", "blue"};
+vector<int> values = {2, 3, 5, 7, 9};
+
+void permute(vector<int> a, int i, int n, vector<int>& s) {
+    int j;
+    if (i == n) {
+        if (a[0]+a[1]*a[2]*a[2]+a[3]*a[3]*a[3]-a[4] == 399) {
+            s = a;
+        }
+    } else {
+        for (j = i; j <= n; j++) {
+            swap(a[i], a[j]);
+            permute(a, i+1, n, s);
+            swap(a[i], a[j]);
+        }
+    }
+}
+
+void solve_coin_problem() {
+    vector<int> solution;
+    permute(values, 0, 4, solution);
+    for (int v : solution) {
+        for (size_t i=0; i<values.size(); i++) {
+            if (values[i] == v) add_input("use "+coins[i]+" coin\n");
+        }
+    }
+}
+
+
 int main() {
     // Initialize registers and memory
     cout << "Initializing registers and memory\n";
@@ -329,7 +358,30 @@ int main() {
               "take can\n"
               "use can\n"
               "use lantern\n"
+              "west\n"
+              "ladder\n"
+              "darkness\n"
+              "continue\n"
+              "west\nwest\nwest\nwest\n"
+              "north\n"
+              "take red coin\n"
+              "north\n"
+              "west\n"
+              "take blue coin\n"
+              "up\n"
+              "take shiny coin\n"
+              "down\neast\neast\n"
+              "take concave coin\n"
+              "down\n"
+              "take corroded coin\n"
+              "up\nwest\n"
+    );
 
+    solve_coin_problem();
+
+    add_input("north\n"
+              "take teleporter\n"
+              "use teleporter\n" /* Code 6 */
     );
 
     // Run the program
