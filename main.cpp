@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <deque>
 
 using namespace std;
 
@@ -19,6 +20,7 @@ uint16_t memory_ptr;
 uint16_t registers[REGISTERS];
 vector<uint16_t> stack;
 state program_state;
+deque<char> input;
 
 union bytes_to_uint16 {
     struct {
@@ -209,7 +211,11 @@ void operate() {
         case 20: // in a
             a = memory[memory_ptr+1];
             opsize = 2;
-            v = (uint16_t)getchar();
+            if (input.empty()) {
+                v = (uint16_t)getchar();
+            } else {
+                v = (uint16_t)input.front(); input.pop_front();
+            }
             set_reg(a, v);
             break;
         case 21: // noop
@@ -231,6 +237,59 @@ void run_program(uint16_t ptr) {
     }
 }
 
+void get_strings() {
+    memory_ptr = 0;
+    uint16_t opsize;
+    while(memory_ptr < MEMORY_SIZE) {
+        switch (memory[memory_ptr]) {
+            case 0: // halt;
+            case 18: // ret
+            case 21: // noop
+                opsize = 1;
+                break;
+            case 2: // push a
+            case 3: // pop a
+            case 6: // jmp a
+            case 17: // call a
+            case 20: // in a
+                opsize = 2;
+                break;
+            case 1: // set a b
+            case 7: // jt a b
+            case 8: // jf a b
+            case 14: // not a b
+            case 15: // rmem a b
+            case 16: // wmem a b
+                opsize = 3;
+                break;
+            case 4: // eq a = (b == c)
+            case 5: // gt a = (b > c)
+            case 9: // add a b c
+            case 10: // mult a b c
+            case 11: // mod a b c
+            case 12: // and a b c
+            case 13: // or a b c
+                opsize = 4;
+                break;
+            case 19: // out a
+                opsize = 2;
+                cout << (char)convert_value(memory[memory_ptr+1]);
+                flush(cout);
+                break;
+            default:
+                opsize = 1;
+                break;
+        }
+        memory_ptr+=opsize;
+    }
+}
+
+void add_input(string line) {
+    for (char c : line) {
+        input.push_back(c);
+    }
+}
+
 int main() {
     // Initialize registers and memory
     cout << "Initializing registers and memory\n";
@@ -249,6 +308,30 @@ int main() {
         c++;
     }
     cout << "Program contains " << c << " uint16 values\n";
+    // Add input to avoid typing
+    add_input("take tablet\n"
+              "use tablet\n" /* Code 4 */
+              "doorway\n"
+              "north\n"
+              "north\n"
+              "bridge\n"
+              "continue\n"
+              "down\n"
+              "east\n"
+              "take empty lantern\n"
+              "west\n"
+              "west\n"
+              "passage\n"
+              "ladder\n"
+              "west\n"
+              "south\n"
+              "north\n" /* Code 5 */
+              "take can\n"
+              "use can\n"
+              "use lantern\n"
+
+    );
+
     // Run the program
     run_program(0);
 
