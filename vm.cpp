@@ -223,7 +223,7 @@ void vm::operate() {
                 v = (uint16_t)getchar();
             } else {
                 v = (uint16_t)input.front(); input.pop_front();
-                out.str(""); // TODO: control this
+                out.str(""); // Note: clear output after new input
             }
             set_reg(a, v);
             break;
@@ -247,52 +247,61 @@ void vm::run_program(uint16_t ptr) {
     }
 }
 
-string vm::get_strings() {
-    stringstream ss;
-    memory_ptr = 0;
-    uint16_t opsize;
-    while(memory_ptr < MEMORY_SIZE) {
-        switch (memory[memory_ptr]) {
-            case 0: // halt;
-            case 18: // ret
-            case 21: // noop
-                opsize = 1;
+const string opstrings[] = {"halt","set","push","pop","eq","gt","jmp","jt","jf","add","mult",
+                            "mod","and","or","not","rmem","wmem","call","ret","out","in","noop"};
+
+void vm::resume_program(vector<breakpoint>& breakpoints) {
+    program_state = running;
+    bool breakpoint_hit = false;
+    string breakpoint_text;
+    while(program_state == running) {
+        // Check breakpoints
+        for (const breakpoint& b : breakpoints) {
+            if (memory[memory_ptr] == b.op) {
+                switch (b.t) {
+                    case break_at_op:
+                        breakpoint_hit = true;
+                        breakpoint_text = "break at op";
+                        break;
+                    case break_at_op_on_a:
+                        if (memory[memory_ptr+1] == b.arg) {
+                            breakpoint_hit = true;
+                            breakpoint_text = "break at op if 'a'=="+to_string(b.arg);
+                        }
+                        break;
+                    case break_at_op_on_b:
+                        if (memory[memory_ptr+2] == b.arg) {
+                            breakpoint_hit = true;
+                            breakpoint_text = "break at op if 'b'=="+to_string(b.arg);
+                        }
+                        break;
+                    case break_at_op_on_c:
+                        if (memory[memory_ptr+3] == b.arg) {
+                            breakpoint_hit = true;
+                            breakpoint_text = "break at op if 'c'=="+to_string(b.arg);
+                        }
+                        break;
+                    case break_at_op_val_a:
+                        if (convert_value(memory[memory_ptr+1]) == b.arg) {
+                            breakpoint_hit = true;
+                            breakpoint_text = "break at op if val('a')=="+to_string(b.arg);
+                        }
+                        break;
+                }
+            }
+            if (breakpoint_hit) {
+                cout << "Breakpoint hit!\n";
+                cout << opstrings[b.op] << " type: " << breakpoint_text << endl;
+                program_state = terminated;
                 break;
-            case 2: // push a
-            case 3: // pop a
-            case 6: // jmp a
-            case 17: // call a
-            case 20: // in a
-                opsize = 2;
-                break;
-            case 1: // set a b
-            case 7: // jt a b
-            case 8: // jf a b
-            case 14: // not a b
-            case 15: // rmem a b
-            case 16: // wmem a b
-                opsize = 3;
-                break;
-            case 4: // eq a = (b == c)
-            case 5: // gt a = (b > c)
-            case 9: // add a b c
-            case 10: // mult a b c
-            case 11: // mod a b c
-            case 12: // and a b c
-            case 13: // or a b c
-                opsize = 4;
-                break;
-            case 19: // out a
-                opsize = 2;
-                ss << (char)convert_value(memory[memory_ptr+1]);
-                break;
-            default:
-                opsize = 1;
-                break;
+            }
         }
-        memory_ptr+=opsize;
+        if (!breakpoint_hit) operate();
     }
-    return ss.str();
+}
+
+void vm::step_one() {
+    operate();
 }
 
 void vm::add_input(string line) {
@@ -335,11 +344,123 @@ string vm::get_output(bool clear) {
     return output;
 }
 
-string vm::print_registers() {
-    string out = "R:V\n";
-    size_t i=0;
-    for (uint16_t v : registers) {
-        out += to_string(i++) + ":" + to_string(v) + "\n";
+uint16_t vm::get_memory_ptr() const {
+    return memory_ptr;
+}
+
+uint16_t *vm::get_memory() {
+    return memory;
+}
+
+uint16_t *vm::get_registers() {
+    return registers;
+}
+
+vector<uint16_t> vm::get_stack() const {
+    return stack;
+}
+
+state vm::get_state() const {
+    return program_state;
+}
+
+string vm::get_operation_text(uint16_t ptr) {
+    uint16_t a, b, c, v;
+    switch (memory[ptr]) {
+        case 0: // halt;
+            return "halt";
+        case 1: // set a b
+            a = memory[memory_ptr+1]-32768;
+            b = convert_value(memory[memory_ptr+2]);
+            return "set <" + to_string(a) +"> to " + to_string(b);
+        case 2: // push a
+            a = convert_value(memory[memory_ptr+1]);
+            return "push " + to_string(a);
+        case 3: // pop a
+            a = convert_value(memory[memory_ptr+1]);
+            return "pop into <" + to_string(a) +"> " + to_string(stack.back());
+        case 4: // eq a = (b == c)
+            a = memory[memory_ptr+1]-32768;
+            b = convert_value(memory[memory_ptr+2]);
+            c = convert_value(memory[memory_ptr+3]);
+            return "eq into <" + to_string(a) + "> " + to_string(b) + " == " + to_string(c);
+        case 5: // gt a = (b > c)
+            a = memory[memory_ptr+1]-32768;
+            b = convert_value(memory[memory_ptr+2]);
+            c = convert_value(memory[memory_ptr+3]);
+            return "gt into <" + to_string(a) + "> " + to_string(b) + " > " + to_string(c);
+        case 6: // jmp a
+            a = convert_value(memory[memory_ptr+1]);
+            return "jmp to " + to_string(a);
+        case 7: // jt a b
+            a = convert_value(memory[memory_ptr+1]);
+            b = convert_value(memory[memory_ptr+2]);
+            return "jt if <" + to_string(memory[memory_ptr+1]-32768) + ">=" + to_string(a) + " != 0 to " + to_string(b);
+        case 8: // jf a b
+            a = convert_value(memory[memory_ptr+1]);
+            b = convert_value(memory[memory_ptr+2]);
+            return "jt if <" + to_string(memory[memory_ptr+1]-32768) + ">=" + to_string(a) + " == 0 to " + to_string(b);
+        case 9: // add a b c
+            a = memory[memory_ptr+1]-32768;
+            b = convert_value(memory[memory_ptr+2]);
+            c = convert_value(memory[memory_ptr+3]);
+            return "add into <" + to_string(a) + "> " + to_string(b) + " + " + to_string(c);
+        case 10: // mult a b c
+            a = memory[memory_ptr+1]-32768;
+            b = convert_value(memory[memory_ptr+2]);
+            c = convert_value(memory[memory_ptr+3]);
+            return "mult into <" + to_string(a) + "> " + to_string(b) + " * " + to_string(c);
+        case 11: // mod a b c
+            a = memory[memory_ptr+1]-32768;
+            b = convert_value(memory[memory_ptr+2]);
+            c = convert_value(memory[memory_ptr+3]);
+            return "mod into <" + to_string(a) + "> " + to_string(b) + " % " + to_string(c);
+        case 12: // and a b c
+            a = memory[memory_ptr+1]-32768;
+            b = convert_value(memory[memory_ptr+2]);
+            c = convert_value(memory[memory_ptr+3]);
+            return "and into <" + to_string(a) + "> " + to_string(b) + " & " + to_string(c);
+        case 13: // or a b c
+            a = memory[memory_ptr+1]-32768;
+            b = convert_value(memory[memory_ptr+2]);
+            c = convert_value(memory[memory_ptr+3]);
+            return "or into <" + to_string(a) + "> " + to_string(b) + " | " + to_string(c);
+        case 14: // not a b
+            a = memory[memory_ptr+1]-32768;
+            b = convert_value(memory[memory_ptr+2]);
+            return "not into <" + to_string(a) + "> ~" + to_string(b);
+        case 15: // rmem a b TESTED
+            a = memory[memory_ptr+1]-32768;
+            b = convert_value(memory[memory_ptr+2]);
+            return "rmem into <" + to_string(a) + "> from addr " + to_string(b) + " (value: " + to_string(memory[b]) + ")";
+        case 16: // wmem a b
+            a = convert_value(memory[memory_ptr+1]);
+            b = convert_value(memory[memory_ptr+2]);
+            return "wmem into addr " + to_string(a) + " value " + to_string(b);
+        case 17: // call a
+            a = convert_value(memory[memory_ptr+1]);
+            return "call " + to_string(a) + " (push " + to_string(memory_ptr+2) + " into stack)";
+        case 18: // ret
+            v = stack.back();
+            return "ret " + to_string(v);
+        case 19: // out a
+        {
+            a = convert_value(memory[memory_ptr+1]);
+            string str = "out ' '";
+            if (a == 10) {
+                return "out '\\n'";
+            }
+            str[5] = char(a);
+            return str;
+        }
+        case 20: // in a
+            a = memory[memory_ptr+1]-32768;
+            return "in into <" + to_string(a) + ">";
+        case 21: // noop
+            return "noop";
+        default:
+            return "-";
+            break;
+
     }
-    return out;
 }

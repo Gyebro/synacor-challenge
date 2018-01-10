@@ -23,6 +23,20 @@ enum state {
     waiting_for_input
 };
 
+enum breakpoint_type {
+    break_at_op,
+    break_at_op_on_a,
+    break_at_op_on_b,
+    break_at_op_on_c,
+    break_at_op_val_a
+};
+
+struct breakpoint {
+    uint16_t op;
+    uint16_t arg;
+    breakpoint_type t;
+};
+
 class vm {
 private:
     uint16_t memory[MEMORY_SIZE];
@@ -39,11 +53,17 @@ private:
 public:
     vm(string program);
     void run_program(uint16_t ptr);
-    string get_strings();
+    void resume_program(vector<breakpoint>& b);
+    void step_one();
     void add_input(string line);
     void solve_coin_problem();
-    string get_output(bool clear = true);
-    string print_registers();
+    string get_output(bool clear = false);
+    uint16_t get_memory_ptr() const;
+    uint16_t* get_memory();
+    uint16_t* get_registers();
+    vector<uint16_t> get_stack() const;
+    state get_state() const;
+    string get_operation_text(uint16_t ptr);
 };
 
 

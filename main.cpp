@@ -1,4 +1,66 @@
 #include "vm.h"
+#include <cstdlib>
+#include <iomanip>
+#include <algorithm>
+
+template<typename T>
+void split(const std::string &s, char delim, T result) {
+    stringstream ss(s); string item;
+    while (getline(ss, item, delim)) {
+        *(result++) = item;
+    }
+}
+
+vector<string> split(const string &s, char delim=' ') {
+    vector<string> elems;
+    split(s, delim, back_inserter(elems));
+    return elems;
+}
+
+void print_help() {
+    cout << "\nDebugger commands:\n";
+    cout << "o:        view last output\n";
+    cout << "q:        quit debugging\n";
+    cout << "i [text]: send input\n";
+    cout << "c:        continue execution\n";
+    cout << "s:        step one\n";
+    cout << "r n v:    sets register n to v\n";
+    cout << "b op key val: add breakpoint\n";
+}
+
+void print_screen(vm& p) {
+    uint16_t* registers = p.get_registers();
+    uint16_t* memory = p.get_memory();
+    uint16_t  memory_ptr = p.get_memory_ptr();
+    uint16_t  addr = 0;
+    cout << "+-----------+---------------+-----------\n";
+    cout << "| Registers | Memory        | Operation \n";
+    cout << "+-----------+---------------+-----------\n";
+    uint16_t lookback = 2;
+    uint16_t lines = 16;
+    for (uint16_t i=0; i<lines; i++) {
+        if (i < 8) {
+            cout << "| " << i << " = " << setw(5) << registers[i] << " |";
+        } else if (i == 8) {
+            cout << "+-----------+";
+        } else {
+            cout << "            |";
+        }
+        if (memory_ptr+i >= lookback) {
+            addr = memory_ptr+i-lookback;
+            cout << (addr==memory_ptr?"[":" ") << setw(5) << addr << (addr==memory_ptr?"]":" ")
+                 << "= " << setw(5) << memory[addr] << " |";
+        } else {
+            cout << "               |";
+        }
+        cout << " " << p.get_operation_text(addr);
+        cout << endl;
+    }
+}
+
+void clear_screen() {
+    if (system("CLS")) system("clear");
+}
 
 int main() {
 
@@ -58,36 +120,68 @@ int main() {
 
     // Enter debug loop
     bool debugging = true;
+    string line;
+    vector<string> words;
+    uint16_t reg, val;
+    vector<breakpoint> breakpoints;
+    breakpoint bp;
     while (debugging) {
-        cout << "VM Debugger:\n";
-        cout << "r: print register values\n";
-        cout << "r N: print register values\n";
-        cout << "s: set register value\n";
-        cout << "o: view last output\n";
-        cout << "i input: send input to program\n";
-        cout << "q: quit debugging\n";
-        string line;
+        clear_screen();
+        print_screen(program);
+        print_help();
         getline(cin, line);
+        words = split(line);
         cout << "Command: " << line << endl;
         switch (line[0]) {
             case 'o':
                 cout << program.get_output() << endl;
+                cout << "Press [ENTER] to continue debugging\n"; getchar();
+                break;
+            case 'i':
+                program.add_input(line.substr(2)+"\n");
+                break;
+            case 'c':
+                program.resume_program(breakpoints);
+                break;
+            case 's':
+                program.step_one();
                 break;
             case 'r':
-                cout << program.print_registers() << endl;
+                reg = (uint16_t)stoul(words[1]);
+                val = (uint16_t)stoul(words[2]);
+                program.get_registers()[reg] = val;
+                break;
+            case 'b':
+                // b op key val
+                bp.op = (uint16_t)stoul(words[1]);
+                bp.arg = 0;
+                switch (words[2][0]) {
+                    case '0':
+                        bp.t = break_at_op;
+                        break;
+                    case '1':
+                        bp.t = break_at_op_on_a;
+                        bp.arg = (uint16_t)stoul(words[3]);
+                        break;
+                    case '2':
+                        bp.t = break_at_op_on_b;
+                        bp.arg = (uint16_t)stoul(words[3]);
+                        break;
+                    case '3':
+                        bp.t = break_at_op_on_c;
+                        bp.arg = (uint16_t)stoul(words[3]);
+                        break;
+                    case '4':
+                        bp.t = break_at_op_val_a;
+                        bp.arg = (uint16_t)stoul(words[3]);
+                        break;
+                }
+                breakpoints.push_back(bp);
                 break;
             case 'q':
                 debugging = false;
                 break;
         }
-        if (line == "o") {
-
-        }
     }
-
-
-
-    getchar();
-
     return 0;
 }

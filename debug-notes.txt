@@ -1,0 +1,23 @@
+Synacor debug notes
+breakpoint: 1488 jt 1507 if reg[7]!=0
+
+breakpoints: jt/jf with reg7
+b 7 1 32775
+b 8 1 32775
+
+r 7 99
+i use teleporter
+c
+
+[ 5451]=     8 | jt if <7>=99 == 0 to 5605
+
+breakpoint for output
+breakpoint types
+0: no condition
+1: if arg a = X
+2: if arg b = X
+3: if arg c = X
+4: if val(a) = X
+
+b 19 4 10
+b 19 4 32
