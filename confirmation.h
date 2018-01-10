@@ -8,6 +8,7 @@
 
 #include <c++/cstdint>
 #include <vector>
+#include <c++/iostream>
 
 using namespace std;
 
@@ -16,30 +17,22 @@ private:
     vector<uint16_t> stack;
     uint16_t reg0, reg1, reg7;
     void func6027() {
-        if (reg0 != 0) {
-            func6035();
+        if (reg0 == 0) {
+            reg0 = (reg1+1)%32768;
             return;
         }
-        reg0 = (reg1+1)%32768; // reg0 = reg1 + 1
-        return;
-    }
-    void func6035() {
-        if (reg1!=0) {
-            func6048();
+        if (reg1==0) {
+            reg0 = (reg0+32767)%32768;
+            reg1 = reg7;
+            func6027();
             return;
         }
-        reg0 = (reg0+32767)%32768; // reg0--
-        reg1 = reg7;
-        func6027();
-        return;
-    }
-    void func6048() {
         stack.push_back(reg0);
-        reg1 = (reg1+32767)%32768; // reg1--
+        reg1 = (reg1+32767)%32768;
         func6027();
         reg1 = reg0;
         reg0 = stack.back(); stack.pop_back();
-        reg0 = (reg0+32767)%32768; // reg0--
+        reg0 = (reg0+32767)%32768;
         func6027();
         return;
     }
@@ -49,6 +42,7 @@ public:
         reg0 = 4;
         reg1 = 1;
         func6027();
+        cout << reg0 << endl;
     }
 };
 

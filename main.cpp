@@ -65,7 +65,7 @@ void clear_screen() {
 
 int main() {
 
-    confirmation routine(19999);
+    confirmation routine(1);
 
     vm program("challenge.bin");
 
