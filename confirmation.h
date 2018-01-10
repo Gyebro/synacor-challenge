@@ -12,37 +12,36 @@
 
 using namespace std;
 
+struct regs {
+	uint16_t reg0;
+	uint16_t reg1;
+};
+
 class confirmation {
 private:
-    vector<uint16_t> stack;
-    uint16_t reg0, reg1, reg7;
-    void func6027() {
-        if (reg0 == 0) {
-            reg0 = (reg1+1)%32768;
-            return;
+    uint16_t reg7;
+    regs func6027(regs r) {
+        if (r.reg0 == 0) {
+			r.reg0 = r.reg1+1;	//reg0 = (reg1+1)%32768;
+            return r;
         }
-        if (reg1==0) {
-            reg0 = (reg0+32767)%32768;
-            reg1 = reg7;
-            func6027();
-            return;
+        if (r.reg1 == 0) {
+			r.reg0--;			//reg0 = (reg0+32767)%32768;
+            r.reg1 = reg7;
+            return func6027(r);
         }
-        stack.push_back(reg0);
-        reg1 = (reg1+32767)%32768;
-        func6027();
-        reg1 = reg0;
-        reg0 = stack.back(); stack.pop_back();
-        reg0 = (reg0+32767)%32768;
-        func6027();
-        return;
+        //uint16_t temp = reg0;
+		r.reg1--;				//reg1 = (reg1+32767)%32768;
+        r.reg1 = func6027(r).reg0;
+        //reg1 = reg0;
+        //reg0 = temp;
+		r.reg0--;				//reg0 = (reg0+32767)%32768;
+        return func6027(r);
     }
 public:
     confirmation(uint16_t reg7) : reg7(reg7) {
-        stack.resize(0);
-        reg0 = 4;
-        reg1 = 1;
-        func6027();
-        cout << reg0 << endl;
+		regs r = {4, 1};
+        cout << func6027(r).reg0;
     }
 };
 
