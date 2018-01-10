@@ -370,82 +370,82 @@ string vm::get_operation_text(uint16_t ptr) {
         case 0: // halt;
             return "halt";
         case 1: // set a b
-            a = memory[memory_ptr+1]-32768;
-            b = convert_value(memory[memory_ptr+2]);
+            a = memory[ptr+1]-32768;
+            b = convert_value(memory[ptr+2]);
             return "set <" + to_string(a) +"> to " + to_string(b);
         case 2: // push a
-            a = convert_value(memory[memory_ptr+1]);
+            a = convert_value(memory[ptr+1]);
             return "push " + to_string(a);
         case 3: // pop a
-            a = convert_value(memory[memory_ptr+1]);
+            a = convert_value(memory[ptr+1]);
             return "pop into <" + to_string(a) +"> " + to_string(stack.back());
         case 4: // eq a = (b == c)
-            a = memory[memory_ptr+1]-32768;
-            b = convert_value(memory[memory_ptr+2]);
-            c = convert_value(memory[memory_ptr+3]);
+            a = memory[ptr+1]-32768;
+            b = convert_value(memory[ptr+2]);
+            c = convert_value(memory[ptr+3]);
             return "eq into <" + to_string(a) + "> " + to_string(b) + " == " + to_string(c);
         case 5: // gt a = (b > c)
-            a = memory[memory_ptr+1]-32768;
-            b = convert_value(memory[memory_ptr+2]);
-            c = convert_value(memory[memory_ptr+3]);
+            a = memory[ptr+1]-32768;
+            b = convert_value(memory[ptr+2]);
+            c = convert_value(memory[ptr+3]);
             return "gt into <" + to_string(a) + "> " + to_string(b) + " > " + to_string(c);
         case 6: // jmp a
-            a = convert_value(memory[memory_ptr+1]);
+            a = convert_value(memory[ptr+1]);
             return "jmp to " + to_string(a);
         case 7: // jt a b
-            a = convert_value(memory[memory_ptr+1]);
-            b = convert_value(memory[memory_ptr+2]);
-            return "jt if <" + to_string(memory[memory_ptr+1]-32768) + ">=" + to_string(a) + " != 0 to " + to_string(b);
+            a = convert_value(memory[ptr+1]);
+            b = convert_value(memory[ptr+2]);
+            return "jt if <" + to_string(memory[ptr+1]-32768) + ">=" + to_string(a) + " != 0 to " + to_string(b);
         case 8: // jf a b
-            a = convert_value(memory[memory_ptr+1]);
-            b = convert_value(memory[memory_ptr+2]);
-            return "jt if <" + to_string(memory[memory_ptr+1]-32768) + ">=" + to_string(a) + " == 0 to " + to_string(b);
+            a = convert_value(memory[ptr+1]);
+            b = convert_value(memory[ptr+2]);
+            return "jt if <" + to_string(memory[ptr+1]-32768) + ">=" + to_string(a) + " == 0 to " + to_string(b);
         case 9: // add a b c
-            a = memory[memory_ptr+1]-32768;
-            b = convert_value(memory[memory_ptr+2]);
-            c = convert_value(memory[memory_ptr+3]);
+            a = memory[ptr+1]-32768;
+            b = convert_value(memory[ptr+2]);
+            c = convert_value(memory[ptr+3]);
             return "add into <" + to_string(a) + "> " + to_string(b) + " + " + to_string(c);
         case 10: // mult a b c
-            a = memory[memory_ptr+1]-32768;
-            b = convert_value(memory[memory_ptr+2]);
-            c = convert_value(memory[memory_ptr+3]);
+            a = memory[ptr+1]-32768;
+            b = convert_value(memory[ptr+2]);
+            c = convert_value(memory[ptr+3]);
             return "mult into <" + to_string(a) + "> " + to_string(b) + " * " + to_string(c);
         case 11: // mod a b c
-            a = memory[memory_ptr+1]-32768;
-            b = convert_value(memory[memory_ptr+2]);
-            c = convert_value(memory[memory_ptr+3]);
+            a = memory[ptr+1]-32768;
+            b = convert_value(memory[ptr+2]);
+            c = convert_value(memory[ptr+3]);
             return "mod into <" + to_string(a) + "> " + to_string(b) + " % " + to_string(c);
         case 12: // and a b c
-            a = memory[memory_ptr+1]-32768;
-            b = convert_value(memory[memory_ptr+2]);
-            c = convert_value(memory[memory_ptr+3]);
+            a = memory[ptr+1]-32768;
+            b = convert_value(memory[ptr+2]);
+            c = convert_value(memory[ptr+3]);
             return "and into <" + to_string(a) + "> " + to_string(b) + " & " + to_string(c);
         case 13: // or a b c
-            a = memory[memory_ptr+1]-32768;
-            b = convert_value(memory[memory_ptr+2]);
-            c = convert_value(memory[memory_ptr+3]);
+            a = memory[ptr+1]-32768;
+            b = convert_value(memory[ptr+2]);
+            c = convert_value(memory[ptr+3]);
             return "or into <" + to_string(a) + "> " + to_string(b) + " | " + to_string(c);
         case 14: // not a b
-            a = memory[memory_ptr+1]-32768;
-            b = convert_value(memory[memory_ptr+2]);
+            a = memory[ptr+1]-32768;
+            b = convert_value(memory[ptr+2]);
             return "not into <" + to_string(a) + "> ~" + to_string(b);
         case 15: // rmem a b TESTED
-            a = memory[memory_ptr+1]-32768;
-            b = convert_value(memory[memory_ptr+2]);
+            a = memory[ptr+1]-32768;
+            b = convert_value(memory[ptr+2]);
             return "rmem into <" + to_string(a) + "> from addr " + to_string(b) + " (value: " + to_string(memory[b]) + ")";
         case 16: // wmem a b
-            a = convert_value(memory[memory_ptr+1]);
-            b = convert_value(memory[memory_ptr+2]);
+            a = convert_value(memory[ptr+1]);
+            b = convert_value(memory[ptr+2]);
             return "wmem into addr " + to_string(a) + " value " + to_string(b);
         case 17: // call a
-            a = convert_value(memory[memory_ptr+1]);
-            return "call " + to_string(a) + " (push " + to_string(memory_ptr+2) + " into stack)";
+            a = convert_value(memory[ptr+1]);
+            return "call " + to_string(a) + " (push " + to_string(ptr+2) + " into stack)";
         case 18: // ret
             v = stack.back();
             return "ret " + to_string(v);
         case 19: // out a
         {
-            a = convert_value(memory[memory_ptr+1]);
+            a = convert_value(memory[ptr+1]);
             string str = "out ' '";
             if (a == 10) {
                 return "out '\\n'";
@@ -454,7 +454,7 @@ string vm::get_operation_text(uint16_t ptr) {
             return str;
         }
         case 20: // in a
-            a = memory[memory_ptr+1]-32768;
+            a = memory[ptr+1]-32768;
             return "in into <" + to_string(a) + ">";
         case 21: // noop
             return "noop";

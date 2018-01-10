@@ -37,7 +37,7 @@ void print_screen(vm& p) {
     cout << "| Registers | Memory        | Operation \n";
     cout << "+-----------+---------------+-----------\n";
     uint16_t lookback = 2;
-    uint16_t lines = 16;
+    uint16_t lines = 32;
     for (uint16_t i=0; i<lines; i++) {
         if (i < 8) {
             cout << "| " << i << " = " << setw(5) << registers[i] << " |";
