@@ -1,4 +1,5 @@
 #include "vm.h"
+#include "confirmation.h"
 #include <cstdlib>
 #include <iomanip>
 #include <algorithm>
@@ -63,6 +64,8 @@ void clear_screen() {
 }
 
 int main() {
+
+    confirmation routine(19999);
 
     vm program("challenge.bin");
 

@@ -460,7 +460,7 @@ string vm::get_operation_text(uint16_t ptr) {
             return "noop";
         default:
             return "-";
-            break;
-
     }
 }
+
+
