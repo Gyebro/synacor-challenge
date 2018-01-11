@@ -20,13 +20,15 @@ vector<string> split(const string &s, char delim=' ') {
 void print_help() {
     cout << "\nDebugger commands:\n";
     cout << "o:        view last output\n";
-    cout << "q:        quit debugging\n";
     cout << "i [text]: send input\n";
     cout << "c:        continue execution\n";
     cout << "s:        step one\n";
     cout << "r n v:    sets register n to v\n";
     cout << "g n:      go to address n\n";
     cout << "b op key val: add breakpoint\n";
+    cout << "p:        patch/bypass confirmation\n";
+    cout << "q:        quit debugging and continue execution\n";
+    cout << "x:        quit debugging and shut down\n";
 }
 
 void print_screen(vm& p) {
@@ -196,10 +198,29 @@ int main() {
                 }
                 breakpoints.push_back(bp);
                 break;
+            case 'p':
+                // Patch confirmation routine
+                program.add_input("use teleporter\n");
+                program.get_registers()[7] = 25734;
+                bp.op = 5489;
+                breakpoints.push_back(bp);
+                program.resume_program(breakpoints);
+                program.get_registers()[0] = 6;
+                program.set_memory_ptr(5491);
+                program.resume_program(breakpoints);
+                break;
             case 'q':
                 debugging = false;
                 break;
+            case 'x':
+                return 0;
         }
     }
+
+    clear_screen();
+    cout << program.get_output() << endl;
+    breakpoints.clear();
+    program.resume_program(breakpoints, true);
+
     return 0;
 }

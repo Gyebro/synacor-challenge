@@ -48,12 +48,12 @@ private:
     void set_reg(const uint16_t a, const uint16_t v);
     void set_mem(const uint16_t a, const uint16_t v);
     uint16_t convert_value(const uint16_t value);
-    void operate();
+    void operate(bool terminal_interaction = false);
     stringstream out;
 public:
     vm(string program);
     void run_program(uint16_t ptr);
-    void resume_program(vector<breakpoint>& b);
+    void resume_program(vector<breakpoint>& b, bool terminal_interaction = false);
     void step_one();
     void add_input(string line);
     void solve_coin_problem();

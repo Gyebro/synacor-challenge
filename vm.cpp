@@ -80,7 +80,7 @@ uint16_t vm::convert_value(const uint16_t value) {
     }
 }
 
-void vm::operate() {
+void vm::operate(bool terminal_interaction) {
     uint16_t a, b, c, v;
     size_t opsize = 0;
     switch (memory[memory_ptr]) {
@@ -218,17 +218,22 @@ void vm::operate() {
             a = memory[memory_ptr+1];
             opsize = 2;
             out << (char) convert_value(a);
+            if (terminal_interaction) cout << (char) convert_value(a);
             break;
         case 20: // in a
             a = memory[memory_ptr+1];
             opsize = 2;
             if (input.empty()) {
                 program_state = waiting_for_input;
-                return; // TODO: Proper halt and continue
-                v = (uint16_t)getchar();
+                if (terminal_interaction) {
+                    v = (uint16_t)getchar();
+                    program_state = running;
+                } else {
+                    return;
+                }
             } else {
                 v = (uint16_t)input.front(); input.pop_front();
-                out.str(""); // Note: clear output after new input
+                if (!terminal_interaction) out.str("");
             }
             set_reg(a, v);
             break;
@@ -255,7 +260,7 @@ void vm::run_program(uint16_t ptr) {
 const string opstrings[] = {"halt","set","push","pop","eq","gt","jmp","jt","jf","add","mult",
                             "mod","and","or","not","rmem","wmem","call","ret","out","in","noop"};
 
-void vm::resume_program(vector<breakpoint>& breakpoints) {
+void vm::resume_program(vector<breakpoint>& breakpoints, bool terminal_interaction) {
     program_state = running;
     bool breakpoint_hit = false;
     string breakpoint_text;
@@ -309,7 +314,7 @@ void vm::resume_program(vector<breakpoint>& breakpoints) {
                 break;
             }
         }
-        if (!breakpoint_hit) operate();
+        if (!breakpoint_hit) operate(terminal_interaction);
     }
 }
 
