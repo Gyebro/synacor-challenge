@@ -3,7 +3,12 @@
 //
 
 #include <c++/sstream>
+#include <c++/thread>
 #include "vm.h"
+#include "confirmation.h"
+
+#define NUM_THREADS 8
+#define RANGE 32768/NUM_THREADS
 
 // UTILS
 
@@ -257,7 +262,14 @@ void vm::resume_program(vector<breakpoint>& breakpoints) {
     while(program_state == running) {
         // Check breakpoints
         for (const breakpoint& b : breakpoints) {
-            if (memory[memory_ptr] == b.op) {
+            if (b.op > 21) {
+                // Break at line
+                if (memory_ptr == b.op) {
+                    breakpoint_hit = true;
+                    breakpoint_text = "break at line: " + memory_ptr;
+                }
+            }
+            if (!breakpoint_hit && memory[memory_ptr] == b.op) {
                 switch (b.t) {
                     case break_at_op:
                         breakpoint_hit = true;
@@ -291,7 +303,8 @@ void vm::resume_program(vector<breakpoint>& breakpoints) {
             }
             if (breakpoint_hit) {
                 cout << "Breakpoint hit!\n";
-                cout << opstrings[b.op] << " type: " << breakpoint_text << endl;
+                if (b.op <= 21 ) cout << opstrings[b.op];
+                cout << " type: " << breakpoint_text << endl;
                 program_state = terminated;
                 break;
             }
@@ -346,6 +359,10 @@ string vm::get_output(bool clear) {
 
 uint16_t vm::get_memory_ptr() const {
     return memory_ptr;
+}
+
+void vm::set_memory_ptr(uint16_t p) {
+    memory_ptr = p;
 }
 
 uint16_t *vm::get_memory() {
@@ -461,6 +478,32 @@ string vm::get_operation_text(uint16_t ptr) {
         default:
             return "-";
     }
+}
+
+void find_input(int tid) {
+    const uint16_t result = 6;
+    confirmation c;
+    uint16_t min = (tid-1)*RANGE;
+    uint16_t max = (tid)*RANGE;
+    uint16_t input = c.get_input_for_output(result, min, max);
+    if (input > 0) {
+        cout << "Thread " << tid;
+        cout << " found! r[7]=" << input << " yields func6027().r[0]=6\n";
+    }
+}
+
+uint16_t vm::solve_confirmation_problem() {
+    cout << "Finding confirmation routine input\n";
+    thread t[NUM_THREADS];
+    for (int i = 0; i < NUM_THREADS; i++) {
+        t[i] = thread(find_input, i);
+    }
+    cout << "Launched " << NUM_THREADS << " threads\n";
+    for (int i = 0; i < NUM_THREADS; i++) {
+        t[i].join();
+    }
+    return 0;
+
 }
 
 

@@ -1,0 +1,70 @@
++-----------+---------------+-----------
+| Registers | Memory        | Operation
++-----------+---------------+-----------
+| 0 = 25975 |  1796 = 32771 | -
+| 1 = 25974 |  1797 =  1816 | -
+| 2 = 26006 |[ 1798]=    20 | in into <4>
+| 3 =     0 |  1799 = 32772 | -
+| 4 =   101 |  1800 =     4 | eq into <3> 101 == 10
+| 5 =     0 |  1801 = 32771 | -
+| 6 =     0 |  1802 = 32772 | -
+| 7 = 25734 |  1803 =    10 | mult into <32775> 0 * 1816
++-----------+  1804 =     7 | jt if <3>=0 != 0 to 1816
++ Stack top +  1805 = 32771 | -
++-----------+  1806 =  1816 | -
+| s =    10 |  1807 =    16 | wmem into addr 25975 value 101
+|-0 =     0 |  1808 = 32768 | -
+|-1 =   101 |  1809 = 32772 | -
+|-2 =    10 |  1810 =     9 | add into <5> 0 + 1
+|-3 =     3 |  1811 = 32773 | -
+|-4 =    32 |  1812 = 32773 | -
+|-5 =  2826 |  1813 =     1 | set <32774> to 1787
+|-6 =     1 |  1814 =     6 | jmp to 1787
+|-7 =  6124 |  1815 =  1787 | -
+|-8 =    16 |  1816 =    16 | wmem into addr 25974 value 0
+|-9 =  6080 |  1817 = 32769 | -
+            |  1818 = 32773 | -
+            |  1819 =     4 | eq into <3> 101 == 10
+            |  1820 = 32771 | -
+            |  1821 = 32772 | -
+            |  1822 =    10 | mult into <32775> 0 * 1830
+            |  1823 =     7 | jt if <3>=0 != 0 to 1830
+            |  1824 = 32771 | -
+            |  1825 =  1830 | -
+            |  1826 =    20 | in into <4>
+            |  1827 = 32772 | -
+
+Debugger commands:
+o:        view last output
+q:        quit debugging
+i [text]: send input
+c:        continue execution
+s:        step one
+r n v:    sets register n to v
+g n:      go to address n
+b op key val: add breakpoint
+o
+Command: o
+
+
+A strange, electronic voice is projected into your mind:
+
+  "Unusual setting detected!  Starting confirmation process!  Estimated time to completion: 1 billion years."
+
+You wake up on a sandy beach with a slight headache.  The last thing you remember is activating that teleporter... but now you can't find it anywhere in your pack.  Someone seems to have drawn a message in the sand here:
+
+    lVfSqITLZkYK
+
+It begins to rain.  The message washes away.  You take a deep breath and feel firmly grounded in reality as the effects of the teleportation wear off.
+
+== Beach ==
+This is a sandy beach in a cove on some tropical island.  It is raining.  The ocean is to your south, and heavy foliage is to your north; the beach extends west and east.
+
+There are 3 exits:
+- west
+- east
+- north
+
+What do you do?
+
+Press [ENTER] to continue debugging

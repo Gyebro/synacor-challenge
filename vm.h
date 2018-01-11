@@ -61,9 +61,11 @@ public:
     uint16_t get_memory_ptr() const;
     uint16_t* get_memory();
     uint16_t* get_registers();
+    void set_memory_ptr(uint16_t p);
     vector<uint16_t> get_stack() const;
     state get_state() const;
     string get_operation_text(uint16_t ptr);
+    uint16_t solve_confirmation_problem();
 };
 
 

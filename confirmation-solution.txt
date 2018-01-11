@@ -1,0 +1,1 @@
+Thread 7 found! r[7]=25734 yields func6027().r[0]=6

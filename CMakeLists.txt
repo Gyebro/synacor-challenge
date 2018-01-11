@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.9)
 project(synacor_challenge)
 
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,--stack,32000000")
 
 add_executable(synacor_challenge main.cpp vm.cpp vm.h confirmation.cpp confirmation.h)
 

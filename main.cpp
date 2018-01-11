@@ -1,5 +1,4 @@
 #include "vm.h"
-#include "confirmation.h"
 #include <cstdlib>
 #include <iomanip>
 #include <algorithm>
@@ -26,6 +25,7 @@ void print_help() {
     cout << "c:        continue execution\n";
     cout << "s:        step one\n";
     cout << "r n v:    sets register n to v\n";
+    cout << "g n:      go to address n\n";
     cout << "b op key val: add breakpoint\n";
 }
 
@@ -42,10 +42,18 @@ void print_screen(vm& p) {
     for (uint16_t i=0; i<lines; i++) {
         if (i < 8) {
             cout << "| " << i << " = " << setw(5) << registers[i] << " |";
-        } else if (i == 8) {
+        } else if (i == 8 || i == 10) {
             cout << "+-----------+";
-        } else {
-            cout << "            |";
+        } else if (i == 9) {
+            cout << "+ Stack top +";
+        } else if (i == 11) {
+            cout << "| s = " << setw(5) << p.get_stack().size() << " |";
+        } else  {
+            if (i-12 < p.get_stack().size() && (i-12 < 10)) {
+                cout << "|-" << i-12 << " = " << setw(5) << p.get_stack()[p.get_stack().size()-(i-12)-1] << " |";
+            } else {
+                cout << "            |";
+            }
         }
         if (memory_ptr+i >= lookback) {
             addr = memory_ptr+i-lookback;
@@ -64,8 +72,6 @@ void clear_screen() {
 }
 
 int main() {
-
-    confirmation routine(2);
 
     vm program("challenge.bin");
 
@@ -121,6 +127,8 @@ int main() {
     // Run the program
     program.run_program(0);
 
+    //program.solve_confirmation_problem();
+
     // Enter debug loop
     bool debugging = true;
     string line;
@@ -153,6 +161,13 @@ int main() {
                 reg = (uint16_t)stoul(words[1]);
                 val = (uint16_t)stoul(words[2]);
                 program.get_registers()[reg] = val;
+                break;
+            case 'g':
+                program.set_memory_ptr(stoul(words[1]));
+                break;
+            case 'l':
+                bp.op = (uint16_t)stoul(words[1]);
+                breakpoints.push_back(bp);
                 break;
             case 'b':
                 // b op key val
