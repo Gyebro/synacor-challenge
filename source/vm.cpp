@@ -248,12 +248,12 @@ void vm::operate(bool terminal_interaction) {
     memory_ptr += opsize;
 }
 
-void vm::run_program(uint16_t ptr) {
+void vm::run_program(uint16_t ptr, bool terminal_interaction) {
     memory_ptr = ptr;
     stack.resize(0);
     program_state = running;
     while(program_state == running) {
-        operate();
+        operate(terminal_interaction);
     }
 }
 

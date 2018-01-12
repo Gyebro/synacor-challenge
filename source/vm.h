@@ -52,7 +52,7 @@ private:
     stringstream out;
 public:
     vm(string program);
-    void run_program(uint16_t ptr);
+    void run_program(uint16_t ptr, bool terminal_interaction = false);
     void resume_program(vector<breakpoint>& b, bool terminal_interaction = false);
     void resume_program(bool terminal_interaction = false);
     void step_one();
