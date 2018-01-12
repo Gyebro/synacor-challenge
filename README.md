@@ -24,7 +24,7 @@ Without any specific details about the stages of the challenge, let me provide a
 
 ### Code 1 and 2: Booting up
 
-After reading the *arch-spec* and submitting the *1st code*, I've started the challenge by implementing all op-codes and then booting up the system (Source code at this point: https://github.com/Gyebro/synacor-challenge/commit/8003ba6d45287ef0a0862f0733844efce3fc6c89 ).
+After reading the *arch-spec* and submitting the *1st code*, I've started the challenge by implementing all op-codes and then booting up the system. Source code at this point: [8003ba6](https://github.com/Gyebro/synacor-challenge/commit/8003ba6d45287ef0a0862f0733844efce3fc6c89).
 The program greeted me with the following message:
 
     Welcome to the Synacor Challenge!
@@ -39,7 +39,7 @@ I've got the *2nd code* but it seems something is wrong with my implementation.
 
 ### Code 3: Flawless implementation
 
-After fixing the bugs the self test completed without errors (See commit: https://github.com/Gyebro/synacor-challenge/commit/49209e152359eef24fa5c9feb895103eeb232300 ). 
+After fixing the bugs the self test completed without errors. See commit: [49209e1](https://github.com/Gyebro/synacor-challenge/commit/49209e152359eef24fa5c9feb895103eeb232300). 
 This is what I've seen:
 
     Executing self-test...
@@ -64,7 +64,7 @@ The self-test gave me the *3rd code*, but more importantly a text-adventure game
 ### Code 4 and 5: Walking around in the darkness
 
 After taking and using the *tablet*, which yields the *4th code*, I've quickly realised that I need a save/load system. I've decided to create an input buffer for the program and load those inputs which were proven to be useful. 
-This, along with some notes of the locations of the adventure game were enough to find the *5th code*. (See commit: https://github.com/Gyebro/synacor-challenge/commit/cf60edff541c813b40e012ac6b07cef31a77222f )
+This, along with some notes of the locations of the adventure game were enough to find the *5th code*. See commit: [cf60edf](https://github.com/Gyebro/synacor-challenge/commit/cf60edff541c813b40e012ac6b07cef31a77222f)
 
     Chiseled on the wall of one of the passageways, you see:
     
@@ -90,7 +90,7 @@ After satisfying the equation with the correct order of coins, an interesting pi
     Things of interest here:
     - teleporter
 
-Activating the teleporter yields the *6th code*. (See:  https://github.com/Gyebro/synacor-challenge/commit/17751d6c6e3b33e2becc8389eda04467dd4e424b )
+Activating the teleporter yields the *6th code*. See: [17751d6](https://github.com/Gyebro/synacor-challenge/commit/17751d6c6e3b33e2becc8389eda04467dd4e424b)
 
 ### Code 7: The Teleporter
 
@@ -206,7 +206,7 @@ After setting the correct value in my debugger and bypassing the confirmation, I
     
     It begins to rain.  The message washes away.  You take a deep breath and feel firmly grounded in reality as the effects of the teleportation wear off.
 	
-(The code at this point: https://github.com/Gyebro/synacor-challenge/commit/2c2f0585a9ca3dedba44e07ad7f0d14cfb88c308 )
+The code at this point: [2c2f058](https://github.com/Gyebro/synacor-challenge/commit/2c2f0585a9ca3dedba44e07ad7f0d14cfb88c308)
 
 ### Code 8: The Orb
 
@@ -237,7 +237,7 @@ After opening the vault and using the mirror, the *8th code* was found:
     
     Congratulations; you have reached the end of the challenge!
 	
-(See commit: https://github.com/Gyebro/synacor-challenge/commit/7ad9feac227250698e1258ed5e6d0e250f58cce6 )
+See commit: [7ad9fea](https://github.com/Gyebro/synacor-challenge/commit/7ad9feac227250698e1258ed5e6d0e250f58cce6)
 
 ![All codes found](images/code8.png)
 
