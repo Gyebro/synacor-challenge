@@ -1,0 +1,40 @@
+As you approach the vault door, the number on the vault door flashes white!  The hourglass is still running!  It flashes white!  You hear a click from the vault door.  The orb evaporates out of hour hands.
+
+== Vault Door ==
+You stand before the door to the vault; it has a large '30' carved into it.  Affixed to the wall near the door, there is a running hourglass which never seems to run out of sand.
+
+The floor of this room is a large mosaic depicting the number '1'.
+
+There are 3 exits:
+- south
+- west
+- vault
+
+What do you do?
+vault
+
+== Vault ==
+This vault contains incredible riches!  Piles of gold and platinum coins surround you, and the walls are adorned with topazes, rubies, sapphires, emeralds, opals, dilithium crystals, elerium-115, and unobtainium.
+
+Things of interest here:
+- mirror
+
+There is 1 exit:
+- leave
+
+What do you do?
+look mirror
+
+This is a rather mundane hand-held mirror from the otherwise magnificent vault room.  What USE could it possibly have?
+
+What do you do?
+take mirror
+
+Taken.
+
+What do you do?
+use mirror
+
+You gaze into the mirror, and you see yourself gazing back.  But wait!  It looks like someone wrote on your face while you were unconscious on the beach!  Through the mirror, you see "IpWWlixwbpXH" scrawled in charcoal on your forehead.
+
+Congratulations; you have reached the end of the challenge!

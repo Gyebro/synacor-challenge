@@ -142,6 +142,7 @@ int main() {
         clear_screen();
         print_screen(program);
         print_help();
+        flush(cout);
         getline(cin, line);
         words = split(line);
         cout << "Command: " << line << endl;
@@ -220,6 +221,18 @@ int main() {
     clear_screen();
     cout << program.get_output() << endl;
     breakpoints.clear();
+    program.add_input("north\nnorth\nnorth\nnorth\n"
+                      "north\nnorth\nnorth\n"
+                      "east\n"
+                      "take journal\n"
+                      "west\n"
+                      "north\nnorth\n" // Vault Antechamber
+                      "take orb\n");
+    program.resume_program(breakpoints, false);
+    cout << program.get_output() << endl;
+
+    program.solve_maze_problem();
+
     program.resume_program(breakpoints, true);
 
     return 0;

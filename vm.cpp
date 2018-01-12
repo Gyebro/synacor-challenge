@@ -511,4 +511,191 @@ uint16_t vm::solve_confirmation_problem() {
 
 }
 
+enum class maze_tile_type {
+    value,
+    plus,
+    minus,
+    mult
+};
 
+struct maze_tile {
+    size_t id;
+    maze_tile_type type;
+    int value;
+    vector<size_t> neighbours;
+};
+
+class maze {
+private:
+    vector<maze_tile> tiles;
+    size_t t_start, t_end;
+    int weight(const vector<size_t> path) {
+        if (path.front()!=0) {
+            return -1;
+        }
+        if (path.size()%2==0) {
+            return -1; // Error
+        }
+        int weight = tiles[0].value;
+        for (size_t i=1; i<path.size(); i+=2) {
+            int val = tiles[path[i+1]].value;
+            switch (tiles[path[i]].type) {
+                case maze_tile_type::value:
+                    return -1; // Error
+                case maze_tile_type::plus:
+                    weight += val;
+                    break;
+                case maze_tile_type::minus:
+                    weight -= val;
+                    break;
+                case maze_tile_type::mult:
+                    weight *= val;
+                    break;
+            }
+        }
+        return weight;
+    }
+public:
+    maze() {
+        tiles.resize(16);
+        t_start = 0;
+        t_end = 15;
+    }
+    void add(const maze_tile& t) {
+        tiles[t.id]=t;
+    }
+    void update_neighbours() {
+        for (size_t i=0; i<16; i++) {
+            vector<size_t> n;
+            if (i > 3)  n.push_back(i-4); // South
+            if (i < 12) n.push_back(i+4); // North
+            if (i % 4 != 0) n.push_back(i-1); // West
+            if (i % 4 != 3) n.push_back(i+1); // East
+            tiles[i].neighbours=n;
+        }
+    }
+    vector<size_t> bfs(size_t target_value) {
+        vector<vector<size_t>> paths, new_paths;
+        paths.push_back({t_start});
+        size_t depth = 0;
+        vector<size_t> path;
+        int max_weight = 70;
+        while (true) {
+            new_paths.resize(0);
+            new_paths.reserve(paths.size()*4);
+            for (size_t i=0; i<paths.size(); i++) {
+                for (size_t n : tiles[paths[i].back()].neighbours) {
+                    path = paths[i];
+                    path.push_back(n);
+                    new_paths.push_back(path);
+                }
+            }
+            paths = new_paths;
+            depth++;
+            int w;
+            size_t erase_start = 0;
+            size_t erase_shatter = 0;
+            size_t erase_end = 0;
+            size_t erase_too_heavy = 0;
+            if (depth % 2 == 0) {
+                for (size_t i=0; i<paths.size(); i++) {
+                    // Discard those who went back to t_start
+                    if (paths[i].back()==t_start) {
+                        paths.erase(paths.begin()+i); i--;
+                        erase_start++;
+                    } else {
+                        // Calculate orb weight
+                        w = weight(paths[i]);
+                        // Discard 0 or negative weights
+                        if (w <= 0) {
+                            paths.erase(paths.begin()+i); i--;
+                            erase_shatter++;
+                        } else if (w >= max_weight) {
+                            paths.erase(paths.begin()+i); i--;
+                            erase_too_heavy++;
+                        } else if (paths[i].back() == t_end) {
+                            // At the end tile
+                            if (w == target_value) {
+                                cout << "Orb value at vault: " << w << endl;
+                                return paths[i];
+                            } else {
+                                // Discard those whose value does not match the destination
+                                paths.erase(paths.begin()+i); i--;
+                                erase_end++;
+                            }
+                        }
+                    }
+                }
+                cout << "BFS: depth=" << depth << ", paths=" << paths.size() << endl;
+                cout << " Orb shattered in " << erase_shatter << " cases\n";
+                cout << " Orb was reset in " << erase_start << " cases\n";
+                cout << " Orb was too heavy in " << erase_too_heavy << " cases\n";
+                cout << " Orb failed to open vault in " << erase_end << " cases\n";
+            }
+        }
+    }
+};
+
+/**
+ * Maze layout
+ * [ * ]-[ 8 ]-[ - ]-[ 1 ]
+ *   |     |     |     |
+ * [ 4 ]-[ * ]-[11 ]-[ * ]
+ *   |     |     |     |
+ * [ + ]-[ 4 ]-[ - ]-[18 ]
+ *   |     |     |     |
+ * [22 ]-[ - ]-[ 9 ]-[ * ]
+ */
+void vm::solve_maze_problem() {
+    maze m;
+    vector<size_t> n(0);
+    m.add({ 0, maze_tile_type::value, 22, n});
+    m.add({ 1, maze_tile_type::minus,  0, n});
+    m.add({ 2, maze_tile_type::value,  9, n});
+    m.add({ 3, maze_tile_type::mult,   0, n});
+
+    m.add({ 4, maze_tile_type::plus,   0, n});
+    m.add({ 5, maze_tile_type::value,  4, n});
+    m.add({ 6, maze_tile_type::minus,  0, n});
+    m.add({ 7, maze_tile_type::value, 18, n});
+
+    m.add({ 8, maze_tile_type::value,  4, n});
+    m.add({ 9, maze_tile_type::mult,   0, n});
+    m.add({10, maze_tile_type::value, 11, n});
+    m.add({11, maze_tile_type::mult,   0, n});
+
+    m.add({12, maze_tile_type::mult,   0, n});
+    m.add({13, maze_tile_type::value,  8, n});
+    m.add({14, maze_tile_type::minus,  0, n});
+    m.add({15, maze_tile_type::value,  1, n});
+
+    m.update_neighbours();
+
+    vector<size_t> path = m.bfs(30);
+
+    cout << "Solution found: steps=" << path.size()-1 << endl;
+
+    for (size_t i=0; i<path.size()-1; i++) {
+        int i0 = path[i];
+        int i1 = path[i+1];
+        switch (i1-i0) {
+            case +1:
+                add_input("east\n");
+                break;
+            case -1:
+                add_input("west\n");
+                break;
+            case +4:
+                add_input("north\n");
+                break;
+            case -4:
+                add_input("south\n");
+                break;
+            default:
+                cout << "Error while processing path\n";
+                break;
+        }
+    }
+
+    return;
+}

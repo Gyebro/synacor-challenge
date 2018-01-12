@@ -66,6 +66,7 @@ public:
     state get_state() const;
     string get_operation_text(uint16_t ptr);
     uint16_t solve_confirmation_problem();
+    void solve_maze_problem();
 };
 
 
