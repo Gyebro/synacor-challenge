@@ -54,6 +54,7 @@ public:
     vm(string program);
     void run_program(uint16_t ptr);
     void resume_program(vector<breakpoint>& b, bool terminal_interaction = false);
+    void resume_program(bool terminal_interaction = false);
     void step_one();
     void add_input(string line);
     void solve_coin_problem();

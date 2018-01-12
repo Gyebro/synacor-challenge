@@ -260,6 +260,11 @@ void vm::run_program(uint16_t ptr) {
 const string opstrings[] = {"halt","set","push","pop","eq","gt","jmp","jt","jf","add","mult",
                             "mod","and","or","not","rmem","wmem","call","ret","out","in","noop"};
 
+void vm::resume_program(bool terminal_interaction) {
+    vector<breakpoint> empty(0);
+    resume_program(empty, terminal_interaction);
+}
+
 void vm::resume_program(vector<breakpoint>& breakpoints, bool terminal_interaction) {
     program_state = running;
     bool breakpoint_hit = false;

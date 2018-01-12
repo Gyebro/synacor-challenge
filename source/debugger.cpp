@@ -1,23 +1,11 @@
-#include "vm.h"
-#include <cstdlib>
+//
+// Created by Gyebro on 2018. 01. 12..
+//
+
+#include "debugger.h"
 #include <iomanip>
-#include <algorithm>
 
-template<typename T>
-void split(const std::string &s, char delim, T result) {
-    stringstream ss(s); string item;
-    while (getline(ss, item, delim)) {
-        *(result++) = item;
-    }
-}
-
-vector<string> split(const string &s, char delim=' ') {
-    vector<string> elems;
-    split(s, delim, back_inserter(elems));
-    return elems;
-}
-
-void print_help() {
+void debugger::print_help() {
     cout << "\nDebugger commands:\n";
     cout << "o:        view last output\n";
     cout << "i [text]: send input\n";
@@ -31,10 +19,10 @@ void print_help() {
     cout << "x:        quit debugging and shut down\n";
 }
 
-void print_screen(vm& p) {
-    uint16_t* registers = p.get_registers();
-    uint16_t* memory = p.get_memory();
-    uint16_t  memory_ptr = p.get_memory_ptr();
+void debugger::print_screen() {
+    uint16_t* registers = p->get_registers();
+    uint16_t* memory = p->get_memory();
+    uint16_t  memory_ptr = p->get_memory_ptr();
     uint16_t  addr = 0;
     cout << "+-----------+---------------+-----------\n";
     cout << "| Registers | Memory        | Operation \n";
@@ -49,10 +37,10 @@ void print_screen(vm& p) {
         } else if (i == 9) {
             cout << "+ Stack top +";
         } else if (i == 11) {
-            cout << "| s = " << setw(5) << p.get_stack().size() << " |";
+            cout << "| s = " << setw(5) << p->get_stack().size() << " |";
         } else  {
-            if (i-12 < p.get_stack().size() && (i-12 < 10)) {
-                cout << "|-" << i-12 << " = " << setw(5) << p.get_stack()[p.get_stack().size()-(i-12)-1] << " |";
+            if (i-12 < p->get_stack().size() && (i-12 < 10)) {
+                cout << "|-" << i-12 << " = " << setw(5) << p->get_stack()[p->get_stack().size()-(i-12)-1] << " |";
             } else {
                 cout << "            |";
             }
@@ -64,73 +52,13 @@ void print_screen(vm& p) {
         } else {
             cout << "               |";
         }
-        cout << " " << p.get_operation_text(addr);
+        cout << " " << p->get_operation_text(addr);
         cout << endl;
     }
 }
 
-void clear_screen() {
-    if (system("CLS")) system("clear");
-}
-
-int main() {
-
-    vm program("challenge.bin");
-
-    // Add input to avoid typing
-    program.add_input("take tablet\n"
-              "use tablet\n" /* Code 4 */
-              "doorway\n"
-              "north\n"
-              "north\n"
-              "bridge\n"
-              "continue\n"
-              "down\n"
-              "east\n"
-              "take empty lantern\n"
-              "west\n"
-              "west\n"
-              "passage\n"
-              "ladder\n"
-              "west\n"
-              "south\n"
-              "north\n" /* Code 5 */
-              "take can\n"
-              "use can\n"
-              "use lantern\n"
-              "west\n"
-              "ladder\n"
-              "darkness\n"
-              "continue\n"
-              "west\nwest\nwest\nwest\n"
-              "north\n"
-              "take red coin\n"
-              "north\n"
-              "west\n"
-              "take blue coin\n"
-              "up\n"
-              "take shiny coin\n"
-              "down\neast\neast\n"
-              "take concave coin\n"
-              "down\n"
-              "take corroded coin\n"
-              "up\nwest\n"
-    );
-
-    program.solve_coin_problem();
-
-    program.add_input("north\n"
-              "take teleporter\n"
-              "use teleporter\n" /* Code 6 */
-              "take business card\n"
-              "take strange book\n"
-    );
-
-    // Run the program
-    program.run_program(0);
-
-    //program.solve_confirmation_problem();
-
+void debugger::attach(vm *program_pointer) {
+    p = program_pointer;
     // Enter debug loop
     bool debugging = true;
     string line;
@@ -140,7 +68,7 @@ int main() {
     breakpoint bp;
     while (debugging) {
         clear_screen();
-        print_screen(program);
+        print_screen();
         print_help();
         flush(cout);
         getline(cin, line);
@@ -148,25 +76,25 @@ int main() {
         cout << "Command: " << line << endl;
         switch (line[0]) {
             case 'o':
-                cout << program.get_output() << endl;
+                cout << p->get_output() << endl;
                 cout << "Press [ENTER] to continue debugging\n"; getchar();
                 break;
             case 'i':
-                program.add_input(line.substr(2)+"\n");
+                p->add_input(line.substr(2)+"\n");
                 break;
             case 'c':
-                program.resume_program(breakpoints);
+                p->resume_program(breakpoints);
                 break;
             case 's':
-                program.step_one();
+                p->step_one();
                 break;
             case 'r':
                 reg = (uint16_t)stoul(words[1]);
                 val = (uint16_t)stoul(words[2]);
-                program.get_registers()[reg] = val;
+                p->get_registers()[reg] = val;
                 break;
             case 'g':
-                program.set_memory_ptr(stoul(words[1]));
+                p->set_memory_ptr(stoul(words[1]));
                 break;
             case 'l':
                 bp.op = (uint16_t)stoul(words[1]);
@@ -201,39 +129,21 @@ int main() {
                 break;
             case 'p':
                 // Patch confirmation routine
-                program.add_input("use teleporter\n");
-                program.get_registers()[7] = 25734;
+                p->add_input("use teleporter\n");
+                p->get_registers()[7] = 25734;
                 bp.op = 5489;
                 breakpoints.push_back(bp);
-                program.resume_program(breakpoints);
-                program.get_registers()[0] = 6;
-                program.set_memory_ptr(5491);
-                program.resume_program(breakpoints);
+                p->resume_program(breakpoints);
+                p->get_registers()[0] = 6;
+                p->set_memory_ptr(5491);
+                p->resume_program(breakpoints);
                 break;
             case 'q':
                 debugging = false;
                 break;
             case 'x':
-                return 0;
+                return;
         }
     }
-
-    clear_screen();
-    cout << program.get_output() << endl;
-    breakpoints.clear();
-    program.add_input("north\nnorth\nnorth\nnorth\n"
-                      "north\nnorth\nnorth\n"
-                      "east\n"
-                      "take journal\n"
-                      "west\n"
-                      "north\nnorth\n" // Vault Antechamber
-                      "take orb\n");
-    program.resume_program(breakpoints, false);
-    cout << program.get_output() << endl;
-
-    program.solve_maze_problem();
-
-    program.resume_program(breakpoints, true);
-
-    return 0;
+    return;
 }
